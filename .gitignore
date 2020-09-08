@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/XFWeatherApp
+/packages
+/XFWeatherApp/bin
+/XFWeatherApp/obj
+/XFWeatherApp.Android/bin
+/XFWeatherApp.Android/obj
+/XFWeatherApp.iOS/obj
+/XFWeatherApp.UnitTests/obj

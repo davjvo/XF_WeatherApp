@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:utils="clr-namespace:XFWeatherApp.Utils"
+             x:Class="XFWeatherApp.Views.HomePage"
+             NavigationPage.HasNavigationBar="False">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style 
+                x:Key="LabelCenter" 
+                TargetType="Label">
+                <Setter Property="FontFamily" Value="Amsi" />
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+            </Style>
+            <Style 
+                x:Key="LabelGridCentered" 
+                BasedOn="{StaticResource LabelCenter}"
+                TargetType="Label">
+                <Setter Property="Grid.ColumnSpan" Value="2" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <StackLayout Padding="0,10">
+            <Grid 
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto, 15"
+                RowSpacing="10"
+                Padding="15,35,15,0" >
+                <Label 
+                    FontAttributes="Bold"
+                    FontSize="Title"
+                    Text="Weather Forecast" 
+                    Style="{StaticResource LabelGridCentered}" />
+                <Label
+                    Grid.Row="1"
+                    Style="{StaticResource LabelGridCentered}"
+                    Text="{Binding WeatherReport.Date, StringFormat='{0:dd/MM/yyyy - hh:mm}'}" />
+                <Label 
+                    Grid.Row="2"
+                    Style="{StaticResource LabelGridCentered}" >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{x:Static utils:IconFont.Compass}" FontFamily="FontAwesome" FontAttributes="Bold"  />
+                            <Span Text=" " />
+                            <Span Text="{Binding WeatherReport.Location}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToMapCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label 
+                    Grid.Row="3"
+                    Style="{StaticResource LabelGridCentered}" >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span 
+                                Text="{Binding WeatherReport.Icon}"
+                                FontFamily="FontAwesome" />
+                            <Span 
+                                Text="  " />
+                            <Span 
+                                FontSize="Large"
+                                Text="{Binding WeatherReport.Temp}" 
+                                FontAttributes="Bold" />
+                            <Span 
+                                Text=" " />
+                            <Span 
+                                Text="{Binding WeatherReport.FeelsLike}"
+                                TextColor="#C2C2C2"
+                                FontSize="Small" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label 
+                    Grid.Row="4"
+                    Grid.ColumnSpan="2"
+                    Text="Forecast"
+                    VerticalTextAlignment="End"
+                    FontSize="Subtitle"
+                    FontFamily="Amsi"
+                    FontAttributes="Bold" />
+                <BoxView Grid.Row="6" Grid.ColumnSpan="2" HeightRequest="1" Color="Black" />
+            </Grid>
+            <CollectionView
+                ItemsSource="{Binding Forecasts}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="15" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame 
+                            HasShadow="False"
+                            CornerRadius="15"
+                            BorderColor="#D2D2D2">
+                            <Frame.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#D2D2D2" Offset=".2"/>
+                                    <GradientStop Color="#F2F2F2" Offset=".5"/>
+                                    <GradientStop Color="White" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Frame.Background>
+                            <Grid
+                                RowDefinitions="Auto,Auto,*,Auto">
+                                <Label HorizontalTextAlignment="Center" Grid.ColumnSpan="2">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span 
+                                                FontSize="Large"
+                                                Text="{Binding Temp}" 
+                                                FontAttributes="Bold" />
+                                            <Span 
+                                                Text="  " />
+                                            <Span 
+                                                Text="{Binding FeelsLike}"
+                                                TextColor="#A2A2A2"
+                                                FontSize="Small"  />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Text="{Binding Icon}"
+                                    FontFamily="FontAwesome"
+                                    HorizontalTextAlignment="Center"
+                                    Style="{StaticResource LabelGridCentered}" />
+                                <Label
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    Text="{Binding Date, StringFormat='{0:dd/MM/yyyy - hh:mm}'}"
+                                    HorizontalTextAlignment="Center"
+                                    Style="{StaticResource LabelGridCentered}" />
+                                <Label 
+                                    Grid.Row="3"
+                                    >
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="Wind: " FontFamily="Amsi" FontAttributes="Bold" />
+                                            <Span Text="{Binding WindInfo.Speed}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label 
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    HorizontalTextAlignment="End">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="Humidity: " FontFamily="Amsi" FontAttributes="Bold" />
+                                            <Span Text="{Binding Humidity}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
