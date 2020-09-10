@@ -30,8 +30,7 @@
                         FontAttributes="Bold"
                         BackgroundColor="White">
                         <local:CustomEntry.Behaviors>
-                            <behaviors:TextChangedBehavior 
-                                    Command="{Binding Source={x:Reference Page}, Path=BindingContext.SearchCommand}" />
+                            <behaviors:TextChangedBehavior  />
                         </local:CustomEntry.Behaviors>
                     </local:CustomEntry>
                     <Image 
