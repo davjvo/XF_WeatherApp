@@ -43,7 +43,7 @@ namespace XFWeatherApp.ViewModels
                 var permissionStatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
                 if (permissionStatus == PermissionStatus.Granted)
                 {
-                    var location = await Geolocation.GetLastKnownLocationAsync();
+                    var location = await Geolocation.GetLocationAsync();
                     Latitude = location.Latitude.ToString();
                     Longitude = location.Longitude.ToString();
                     GetCurrentWeatherCommand.Execute();

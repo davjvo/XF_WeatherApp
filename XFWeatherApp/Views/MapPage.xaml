@@ -60,7 +60,7 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame Padding="0">
+                        <Frame Padding="0" HasShadow="False">
                             <StackLayout>
                                 <Label Text="{Binding Description}" Padding="10, 0" FontSize="Large" />
                                 <BoxView HeightRequest="1" Color="#D2D2D2"  />
@@ -72,10 +72,11 @@
             <Frame 
                 Grid.Row="1" 
                 VerticalOptions="End"
+                 HasShadow="False"
                 Margin="50,0,50,30"
                 BackgroundColor="Transparent">
                 <Button 
-                    Text="Buscar" 
+                    Text="Search" 
                     BackgroundColor="White"
                     Command="{Binding SelectCommmand}" />
             </Frame>

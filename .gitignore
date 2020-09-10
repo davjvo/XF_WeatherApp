@@ -10,3 +10,4 @@
 /XFWeatherApp.Android/obj
 /XFWeatherApp.iOS/obj
 /XFWeatherApp.UnitTests/obj
+/XFWeatherApp.iOS/bin/iPhoneSimulator
