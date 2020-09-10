@@ -1,19 +1,20 @@
 ﻿using Acr.UserDialogs;
 using Prism.Commands;
 using Prism.Navigation;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using XFWeatherApp.ApiManagers.Maps;
 using XFWeatherApp.Models;
+using XFWeatherApp.Utils;
 
 namespace XFWeatherApp.ViewModels
 {
     public class MapPageViewModel : BaseViewModel, INavigatedAware
     {
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        public string SearchText { get; set; }
         public bool IsSearching { get; set; }
+        public string SearchText { get; set; }
+        public MapPosition Position { get; set; }
         public Autocomplete Selected { get; set; }
         public ObservableCollection<Autocomplete> Suggestions { get; set; }
         public DelegateCommand SelectAutocompleteCommand { get; set; }
@@ -27,43 +28,58 @@ namespace XFWeatherApp.ViewModels
             _navigationService = navigationService;
             Suggestions = new ObservableCollection<Autocomplete>();
             SearchCommand = new DelegateCommand(async () => await Search());
-            SelectAutocompleteCommand = new DelegateCommand(SetSelected);
+            SelectAutocompleteCommand = new DelegateCommand(async () => await SetSelectedValues());
             SelectCommmand = new DelegateCommand(async () => await Submit());
         }
         async Task Search()
         {
-            IsSearching = SearchText.Length > 0;
-            var mapsSuggestion = await _mapsApiManager.GetAutoComplete(SearchText);
-            Suggestions = new ObservableCollection<Autocomplete>(mapsSuggestion);
+            try
+            {
+                IsSearching = SearchText.Length > 0 && !string.IsNullOrEmpty(Position?.Location);
+                var mapsSuggestion = await _mapsApiManager.GetAutoComplete(SearchText);
+                Suggestions = new ObservableCollection<Autocomplete>(mapsSuggestion);
+            }
+            catch (Exception ex)
+            {
+                await HandleError(ex);
+            }
         }
-        void SetSelected()
+        async Task SetSelectedValues()
         {
-            SearchText = Selected.Description;
-            IsSearching = false;
+            try
+            {
+                if (Selected != null)
+                {
+                    var detail = await _mapsApiManager.GetPlaceDetail(Selected.PlaceId);
+                    Position = new MapPosition(detail.Latitude, detail.Longitude, Selected.Description);
+                }
+                IsSearching = false;
+            }
+            catch (Exception ex)
+            {
+                await HandleError(ex);
+            }
         }
         async Task Submit()
         {
-            var navParams = new NavigationParameters();
-            if (Selected != null)
+            await _navigationService.GoBackAsync(new NavigationParameters
             {
-                var detail = await _mapsApiManager.GetPlaceDetail(Selected.PlaceId);
-                navParams.Add("Latitude", detail.Lat.ToString());
-                navParams.Add("Longitude", detail.Lon.ToString());
-                navParams.Add("Location", SearchText);
-            }
-            await _navigationService.GoBackAsync(navParams);
+                { ParamKeys.Latitude, Position.Latitude },
+                { ParamKeys.Longitude, Position.Longitude },
+                { ParamKeys.Location, Position.Location }
+            });
         }
-
         public void OnNavigatedFrom(INavigationParameters parameters)
         {
         }
-
         public void OnNavigatedTo(INavigationParameters parameters)
         {
-            if(parameters.ContainsKey("Latitude") && parameters.ContainsKey("Longitude"))
+            if(parameters.ContainsKey(ParamKeys.Latitude) && parameters.ContainsKey(ParamKeys.Longitude) && parameters.ContainsKey(ParamKeys.Location))
             {
-                Latitude = (double)parameters["Latitude"];
-                Longitude = (double)parameters["Longitude"];
+                var latitude = (double)parameters[ParamKeys.Latitude];
+                var longitude = (double)parameters[ParamKeys.Longitude];
+                var location = SearchText = (string)parameters[ParamKeys.Location];
+                Position = new MapPosition(latitude, longitude, location);
             }
         }
     }

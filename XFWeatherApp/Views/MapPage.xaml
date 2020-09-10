@@ -9,11 +9,9 @@
     <ContentPage.Content>
         <Grid RowDefinitions="100,*">
             <maps:Map 
-                Grid.RowSpan="2" 
-                InitialCameraUpdate="18.48, -69.91, 12">
+                Grid.RowSpan="2" >
                 <maps:Map.Behaviors>
-                    <behaviors:MapUpdateBehavior 
-                        Longitude="{Binding Source={x:Reference Page}, Path=BindingContext.Longitude}" />
+                    <behaviors:MapUpdateBehavior Position="{Binding Source={x:Reference Page}, Path=BindingContext.Position}" />
                 </maps:Map.Behaviors>
             </maps:Map>
             <Frame
@@ -30,7 +28,7 @@
                         FontAttributes="Bold"
                         BackgroundColor="White">
                         <local:CustomEntry.Behaviors>
-                            <behaviors:TextChangedBehavior  />
+                            <behaviors:TextChangedBehavior Command="{Binding Source={x:Reference Page}, Path=BindingContext.SearchCommand}" />
                         </local:CustomEntry.Behaviors>
                     </local:CustomEntry>
                     <Image 

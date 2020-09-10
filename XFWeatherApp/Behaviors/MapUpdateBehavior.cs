@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Prism.Behaviors;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.GoogleMaps;
+using XFWeatherApp.Models;
 
 namespace XFWeatherApp.Behaviors
 {
-    public class MapUpdateBehavior : Behavior<Map>
+    public class MapUpdateBehavior : BehaviorBase<Map>
     {
-        public static readonly BindableProperty LongitudeProperty = BindableProperty.Create("Longitude", typeof(object), typeof(MapUpdateBehavior), null, propertyChanged: OnLongitudeChanged);
-        public object Longitude
+        public static readonly BindableProperty PositionProperty = BindableProperty.Create("Position", typeof(MapPosition), typeof(MapUpdateBehavior), null, propertyChanged: OnPositionChange);
+        public MapPosition Position
         {
-            get { return (object)GetValue(LongitudeProperty); }
-            set { SetValue(LongitudeProperty, value); }
+            get { return (MapPosition)GetValue(PositionProperty); }
+            set { SetValue(PositionProperty, value); }
         }
         protected override void OnAttachedTo(Map bindable)
         {
@@ -22,21 +22,17 @@ namespace XFWeatherApp.Behaviors
         {
             base.OnDetachingFrom(bindable);
         }
-        static void OnLatitudeChanged(BindableObject bindable, object oldValue, object newValue)
+        static void OnPositionChange(BindableObject bindable, object oldValue, object newValue)
         {
-            var map = bindable as Map;
-            if (map == null) return;
-            CameraUpdate(map, (double)newValue, map.CameraPosition.Target.Longitude);
-        }
-        static void OnLongitudeChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            var map = bindable as Map;
-            if (map == null) return;
-            CameraUpdate(map, map.CameraPosition.Target.Latitude, (double)newValue);
-        }
+            var mapBehavior = bindable as MapUpdateBehavior;
 
-        static void CameraUpdate(Map map, double latitude, double longitude)
-        {
+            if (mapBehavior.Position != null && mapBehavior.AssociatedObject is Map map)
+            {
+                var newPosition = new Position(mapBehavior.Position.Latitude, mapBehavior.Position.Longitude);
+                var cameraPosition = new CameraPosition(newPosition, 12);
+                map.AnimateCamera(CameraUpdateFactory.NewCameraPosition(cameraPosition), duration: TimeSpan.FromSeconds(2));
+            }
+
         }
     }
 }

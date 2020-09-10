@@ -35,10 +35,9 @@ Weather App is a simple weather application developed with Xamarin Forms
 
 ## Pending
 
-- [ ] Move camera after new location has been picked
 - [ ] Add ping to GMap to display current location
 - [ ] Enable pin dragging (dependant on previous point)
-- [x] Test functionality on iOS
+- [ ] Implement Microcharts for Forecast
 
 ## Working platforms
 

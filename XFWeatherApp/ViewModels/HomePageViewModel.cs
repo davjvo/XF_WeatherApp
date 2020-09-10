@@ -1,21 +1,19 @@
 ﻿using Acr.UserDialogs;
 using Prism.Commands;
 using Prism.Navigation;
-using Prism.Xaml;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using XFWeatherApp.ApiManagers.Weather;
 using XFWeatherApp.Models;
+using XFWeatherApp.Utils;
 
 namespace XFWeatherApp.ViewModels
 {
     public class HomePageViewModel : BaseViewModel, INavigatedAware
     {
-        public string Location { get; set; }
-        public string Latitude { get; set; }
-        public string Longitude { get; set; }
+        public MapPosition Position { get; set; }
         public ObservableCollection<WeatherInfo> Forecasts { get; set; } 
         public WeatherInfo WeatherReport { get; set; }
         public DelegateCommand GetCurrentWeatherCommand { get; set; }
@@ -33,8 +31,6 @@ namespace XFWeatherApp.ViewModels
             GetForecastCommand = new DelegateCommand(async () => await FetchForecast());
             GoToMapCommand = new DelegateCommand(async () => await GoToMap());
             GetLastLocationCommand.Execute();
-            GetCurrentWeatherCommand.Execute();
-            GetForecastCommand.Execute();
         }
         public async Task SetCurrentLocationAsync(bool permissionAsked = false)
         {
@@ -44,8 +40,7 @@ namespace XFWeatherApp.ViewModels
                 if (permissionStatus == PermissionStatus.Granted)
                 {
                     var location = await Geolocation.GetLocationAsync();
-                    Latitude = location.Latitude.ToString();
-                    Longitude = location.Longitude.ToString();
+                    Position = new MapPosition(location.Latitude, location.Longitude, "");
                     GetCurrentWeatherCommand.Execute();
                     GetForecastCommand.Execute();
                 }
@@ -72,8 +67,9 @@ namespace XFWeatherApp.ViewModels
             {
                 _userDialogs.Toast("This device doesn't support GeoLocation.");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                await HandleError(ex);
                 _userDialogs.Toast("Unable to retrieve location.");
             }
         }
@@ -81,46 +77,46 @@ namespace XFWeatherApp.ViewModels
         {
             try
             {
-                var weatherInfo = await _weatherApiManager.GetWeatherInfo(Latitude, Longitude);
+                var weatherInfo = await _weatherApiManager.GetWeatherInfo(Position?.Latitude.ToString(), Position?.Longitude.ToString());
                 WeatherReport = new WeatherInfo
                 {
                     Date = weatherInfo.Date,
                     FeelsLike = weatherInfo.FeelsLike,
                     Description = weatherInfo.Description,
                     Humidity = weatherInfo.Humidity,
-                    Location = Location ?? weatherInfo.Location,
+                    Location =  weatherInfo.Location,
                     SkyStatus = weatherInfo.SkyStatus,
                     Temp = weatherInfo.Temp,
                     WindInfo = weatherInfo.WindInfo
                 };
-            }
-            catch (Exception)
-            {
 
-                throw;
+                Position.Location = WeatherReport.Location;
+            }
+            catch (Exception ex)
+            {
+                await HandleError(ex);
             }
         }
         public async Task FetchForecast()
         {
             try
             {
-                var tempForecast = await _weatherApiManager.GetForecast(Latitude, Longitude);
+                var tempForecast = await _weatherApiManager.GetForecast(Position?.Latitude.ToString(), Position?.Longitude.ToString());
                 Forecasts = new ObservableCollection<WeatherInfo>(tempForecast);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                await HandleError(ex);
             }
         }
         public async Task GoToMap()
         {
-            var navParams = new NavigationParameters
+            await _navigationService.NavigateAsync("MapPage", new NavigationParameters
             {
-                { "Latitude", Latitude },
-                { "Longitude", Longitude }
-            };
-            await _navigationService.NavigateAsync("MapPage", navParams);
+                { ParamKeys.Latitude, Position.Latitude },
+                { ParamKeys.Longitude, Position.Longitude },
+                { ParamKeys.Location, Position.Location }
+            });
         }
         public void OnNavigatedFrom(INavigationParameters parameters)
         {
@@ -128,14 +124,14 @@ namespace XFWeatherApp.ViewModels
         }
         public void OnNavigatedTo(INavigationParameters parameters)
         {
-            var latitude = parameters.ContainsKey("Latitude") ? parameters["Latitude"] as string : string.Empty;
-            var longitude = parameters.ContainsKey("Longitude") ? parameters["Longitude"] as string : string.Empty;
-            var location = parameters.ContainsKey("Location") ? parameters["Location"] as string : string.Empty;
-            if (!string.IsNullOrEmpty(latitude) && !string.IsNullOrEmpty(longitude))
+            if (parameters.ContainsKey(ParamKeys.Latitude) && parameters.ContainsKey(ParamKeys.Longitude) && parameters.ContainsKey(ParamKeys.Location) )
             {
-                Latitude = latitude;
-                Longitude = longitude;
-                Location = location;
+                var latitude = (double)parameters[ParamKeys.Latitude];
+                var longitude = (double)parameters[ParamKeys.Longitude];
+                var location = (string)parameters[ParamKeys.Location];
+
+                Position = new MapPosition(latitude, longitude, location);
+
                 GetCurrentWeatherCommand.Execute();
                 GetForecastCommand.Execute();
             }

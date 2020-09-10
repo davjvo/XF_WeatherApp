@@ -11,3 +11,5 @@
 /XFWeatherApp.iOS/obj
 /XFWeatherApp.UnitTests/obj
 /XFWeatherApp.iOS/bin/iPhoneSimulator
+/XFWeatherApp.iOS/bin
+/XFWeatherApp.UnitTests/bin

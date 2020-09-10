@@ -42,8 +42,8 @@ namespace XFWeatherApp.ApiManagers.Maps
                 var json = await placeResponse.Content.ReadAsStringAsync();
                 var detail = JsonConvert.DeserializeObject<DetailResponse>(json);
                 place.Description = detail.Result.FormattedAddress;
-                place.Lat = detail.Result.Geometry.Location.Lat;
-                place.Lon = detail.Result.Geometry.Location.Lng;
+                place.Latitude = detail.Result.Geometry.Location.Lat;
+                place.Longitude = detail.Result.Geometry.Location.Lng;
             }
 
             return place;
