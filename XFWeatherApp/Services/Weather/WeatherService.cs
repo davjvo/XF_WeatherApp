@@ -12,16 +12,16 @@ namespace XFWeatherApp.Services.Weather
         readonly IWeatherService Api;
         public WeatherService(IUserDialogs userDialogs, IConnectivity connectivity) : base(userDialogs, connectivity, AppSetting.WeatherHost)
         {
-            Api = RestService.For<IWeatherService>("https://community-open-weather-map.p.rapidapi.com");
+            Api = RestService.For<IWeatherService>(AppSetting.WeatherHost);
         }
-        public async Task<HttpResponseMessage> GetByLatLon(string lat, string lon, [Header("x-rapidapi-host")] string rapidHost, [Header("x-rapidapi-host")] string rapidKey)
+        public async Task<HttpResponseMessage> GetByLatLon(string lat, string lon, string appid)
         {
-            var request = Api.GetByLatLon(lat, lon, rapidHost, rapidKey);
+            var request = Api.GetByLatLon(lat, lon, appid);
             return await ExecRequest(request);
         }
-        public async Task<HttpResponseMessage> GetForecastByLatLon(string lat, string lon, [Header("x-rapidapi-host")] string rapidHost, [Header("x-rapidapi-host")] string rapidKey)
+        public async Task<HttpResponseMessage> GetForecastByLatLon(string lat, string lon, string appid)
         {
-            var request = Api.GetForecastByLatLon(lat, lon, rapidHost, rapidKey);
+            var request = Api.GetForecastByLatLon(lat, lon, appid);
             return await ExecRequest(request);
         }
     }

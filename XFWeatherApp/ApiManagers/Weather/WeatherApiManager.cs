@@ -22,7 +22,7 @@ namespace XFWeatherApp.ApiManagers.Weather
         }
         public async Task<IEnumerable<WeatherInfo>> GetForecast(string lat, string lon)
         {
-            var forecastResponse = await _weatherService.GetForecastByLatLon(lat, lon, AppSetting.WeatherHost, AppSetting.WeatherKey);
+            var forecastResponse = await _weatherService.GetForecastByLatLon(lat, lon, AppSetting.WeatherKey);
             IEnumerable<WeatherInfo> forecastInfo = new List<WeatherInfo>();
             if (forecastResponse.IsSuccessStatusCode)
             {
@@ -70,7 +70,7 @@ namespace XFWeatherApp.ApiManagers.Weather
 
         public async Task<WeatherInfo> GetWeatherInfo(string lat, string lon)
         {
-            var weatherResponse = await _weatherService.GetByLatLon(lat, lon, AppSetting.WeatherHost, AppSetting.WeatherKey);
+            var weatherResponse = await _weatherService.GetByLatLon(lat, lon, AppSetting.WeatherKey);
             var weatherInfo = new WeatherInfo();
             if (weatherResponse.IsSuccessStatusCode)
             {
