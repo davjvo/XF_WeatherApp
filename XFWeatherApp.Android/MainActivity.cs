@@ -20,9 +20,7 @@ namespace XFWeatherApp.Droid
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             Acr.UserDialogs.UserDialogs.Init(this);
-            Forms.SetFlags("Brush_Experimental");
             Forms.Init(this, savedInstanceState);
-            Xamarin.FormsGoogleMaps.Init(this, savedInstanceState);
             LoadApplication(new App(new AndroidInitializer()));
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)

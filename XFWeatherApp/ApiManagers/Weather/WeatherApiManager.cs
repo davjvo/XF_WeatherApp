@@ -31,9 +31,9 @@ namespace XFWeatherApp.ApiManagers.Weather
                 forecastInfo = forecast.List.Select(f => new WeatherInfo
                 {
                     Date = Helper.UnixTimeStampToDateTime(f.Dt),
-                    FeelsLike = f.Main.FeelsLike,
+                    FeelsLike = Math.Round(f.Main.FeelsLike),
                     Humidity = f.Main.Humidity,
-                    Temp = f.Main.Temp,
+                    Temp = Math.Round(f.Main.Temp),
                     SkyStatus = f.Weather[0]?.Main,
                     WindInfo = new WeatherInfo.Wind
                     {

@@ -2,7 +2,6 @@
 using Prism;
 using Prism.Ioc;
 using UIKit;
-using Xamarin;
 using Xamarin.Forms;
 
 namespace XFWeatherApp.iOS
@@ -12,14 +11,12 @@ namespace XFWeatherApp.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            Forms.SetFlags("Brush_Experimental");
             Forms.Init();
-            FormsGoogleMaps.Init("GMAPS_KEY_HERE");
-            LoadApplication(new App(new iOSInitializer()));
+            LoadApplication(new App(new IOSInitializer()));
 
             return base.FinishedLaunching(app, options);
         }
-        public class iOSInitializer : IPlatformInitializer
+        public class IOSInitializer : IPlatformInitializer
         {
             public void RegisterTypes(IContainerRegistry containerRegistry)
             {

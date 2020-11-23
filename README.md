@@ -2,6 +2,8 @@
 
 Weather App is a simple weather application developed with Xamarin Forms
 
+The design is inspired by [this](https://dribbble.com/shots/14516691-Weather-App) dribbble shot.
+
 ## How to run
 
 ### Run project
@@ -16,11 +18,7 @@ Weather App is a simple weather application developed with Xamarin Forms
 
 ### Setup
 
-- Navigate to ~\XFWeatherApp\XFWeatherApp\Utils\AppSetting.cs and configure your [Open weather map](https://rapidapi.com/community/api/open-weather-map) and [GMaps](https://developers.google.com/maps/documentation/javascript/get-api-key) ApiKeys
-
-- (If Android) Navigate to ~\XFWeatherApp\XFWeatherApp.Android\Properties\AndroidManifest.xml and set your GMaps Key.
-
-- (If iOS) Navigate to  ~\XFWeatherApp\XFWeatherApp.Android\Properties\AndroidManifest.xml and set your GMaps Key ~\XFWeatherApp\XFWeatherApp.iOS\AppDelegate.cs and set your GMaps Key.
+- Navigate to ~\XFWeatherApp\XFWeatherApp\Utils\AppSetting.cs and configure your [Open weather map](https://rapidapi.com/community/api/open-weather-map) ApiKey
 
 ## Features
 
@@ -28,16 +26,9 @@ Weather App is a simple weather application developed with Xamarin Forms
 - [x] Mvvm Architecture
 - [x] API Consumption
 - [x] Cache
-- [x] GMap
 - [x] Geolocation
 - [x] Embeded Fonts
-- [x] Unit test
-
-## Pending
-
-- [ ] Add ping to GMap to display current location
-- [ ] Enable pin dragging (dependant on previous point)
-- [ ] Implement Microcharts for Forecast
+- [x] Microcharts
 
 ## Working platforms
 
@@ -61,10 +52,6 @@ Library heavily inspired by Square's Retrofit library, and it turns your REST AP
 ### Fody
 
 Injects code which raises the PropertyChanged event, into property setters of classes which implement INotifyPropertyChanged.
-
-### Forms.GoogleMaps
-
-Yet another maps library for Xamarin.Forms that optimized for Google maps.
 
 ### Monkey cache
 
@@ -92,6 +79,4 @@ The Place Details service is a web service that returns place details in respons
 
 ### App Images
 
-![Main screen](Images/Preview.png)
-
-![Map screen](Images/Preview2.png)
+![Main screen](Images/Preview.jpg)

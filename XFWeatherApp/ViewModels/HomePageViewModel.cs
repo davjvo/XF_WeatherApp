@@ -1,84 +1,95 @@
 ﻿using Acr.UserDialogs;
+using Microcharts;
 using Prism.Commands;
 using Prism.Navigation;
+using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using XFWeatherApp.ApiManagers.Weather;
 using XFWeatherApp.Models;
-using XFWeatherApp.Utils;
 
 namespace XFWeatherApp.ViewModels
 {
     public class HomePageViewModel : BaseViewModel, INavigatedAware
     {
-        public MapPosition Position { get; set; }
-        public ObservableCollection<WeatherInfo> Forecasts { get; set; } 
-        public WeatherInfo WeatherReport { get; set; }
+        public Place UserLocation { get; set; }
+        WeatherDate selectedDate;
+        public WeatherDate SelectedDate
+        {
+            get { return selectedDate; }
+            set
+            {
+                if (selectedDate != null)
+                {
+                    selectedDate.Selected = false;
+
+                }
+
+                if (value != null)
+                {
+                    selectedDate = value;
+                    selectedDate.Selected = true;
+                }
+            }
+        }
+        public WeatherInfo CurrentDayWeatherReport { get; set; }
+        public ObservableCollection<WeatherDate> Dates { get; set; }
+        public List<WeatherInfo> Forecast { get; set; }
+        public LineChart Chart { get; set; }
         public DelegateCommand GetCurrentWeatherCommand { get; set; }
         public DelegateCommand GetForecastCommand { get; set; }
         public DelegateCommand GetLastLocationCommand { get; set; }
         public DelegateCommand GoToMapCommand { get; set; }
+        public DelegateCommand SelectedDateChangedCommand { get; set; }
         readonly IWeatherApiManager _weatherApiManager;
         public INavigationService _navigationService { get; set; }
         public HomePageViewModel(IWeatherApiManager weatherApiManager, INavigationService navigationService, IUserDialogs userDialogs) : base(userDialogs)
         {
             _weatherApiManager = weatherApiManager;
             _navigationService = navigationService;
-            GetLastLocationCommand = new DelegateCommand(async () => await SetCurrentLocationAsync());
             GetCurrentWeatherCommand = new DelegateCommand(async () => await FetchCurrentWeather());
             GetForecastCommand = new DelegateCommand(async () => await FetchForecast());
-            GoToMapCommand = new DelegateCommand(async () => await GoToMap());
-            GetLastLocationCommand.Execute();
-        }
-        public async Task SetCurrentLocationAsync(bool permissionAsked = false)
-        {
-            try
+            SelectedDateChangedCommand = new DelegateCommand(async() => await SelectedDateChanged());
+            Dates = new ObservableCollection<WeatherDate>();
+
+            var initialDate = DateTime.Now;
+            SelectedDate = new WeatherDate
             {
-                var permissionStatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
-                if (permissionStatus == PermissionStatus.Granted)
+                Date = initialDate
+            };
+            Dates.Add(SelectedDate);
+            for (int i = 1; i < 6; i++)
+            {
+                Dates.Add(new WeatherDate
                 {
-                    var location = await Geolocation.GetLocationAsync();
-                    Position = new MapPosition(location.Latitude, location.Longitude, "");
-                    GetCurrentWeatherCommand.Execute();
-                    GetForecastCommand.Execute();
-                }
-                else if(!permissionAsked && (permissionStatus == PermissionStatus.Denied || permissionStatus == PermissionStatus.Unknown))
-                {
-                    await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-                    await SetCurrentLocationAsync(true);
-                }
-                else
-                {
-                    _userDialogs.Alert("The application can not work without your location.", "Yikes!", "Ok");
-                }
-                
+                    Date = initialDate.AddDays(i),
+                });
             }
-            catch (FeatureNotEnabledException)
+
+            Chart = new LineChart
             {
-                _userDialogs.Toast("Device location seems to be turned off!.");
-            }
-            catch (PermissionException)
-            {
-                _userDialogs.Toast("The application can not work without your location.");
-            }
-            catch (FeatureNotSupportedException)
-            {
-                _userDialogs.Toast("This device doesn't support GeoLocation.");
-            }
-            catch (Exception ex)
-            {
-                await HandleError(ex);
-                _userDialogs.Toast("Unable to retrieve location.");
-            }
+                BackgroundColor = SKColors.Transparent,
+                PointMode = PointMode.Circle,
+                LineMode = LineMode.Spline,
+                PointSize = 50,
+                AnimationDuration = TimeSpan.FromSeconds(2.3),
+                LabelOrientation = Orientation.Horizontal,
+                ValueLabelOrientation = Orientation.Horizontal,
+                LabelColor = SKColors.White,
+                LabelTextSize = 40,
+            };
         }
         public async Task FetchCurrentWeather()
         {
             try
             {
-                var weatherInfo = await _weatherApiManager.GetWeatherInfo(Position?.Latitude.ToString(), Position?.Longitude.ToString());
-                WeatherReport = new WeatherInfo
+                var location = await Geolocation.GetLastKnownLocationAsync();
+                var weatherInfo = await _weatherApiManager.GetWeatherInfo(location?.Latitude.ToString(), location?.Longitude.ToString());
+                CurrentDayWeatherReport = new WeatherInfo
                 {
                     Date = weatherInfo.Date,
                     FeelsLike = weatherInfo.FeelsLike,
@@ -89,8 +100,12 @@ namespace XFWeatherApp.ViewModels
                     Temp = weatherInfo.Temp,
                     WindInfo = weatherInfo.WindInfo
                 };
-
-                Position.Location = WeatherReport.Location;
+                UserLocation = new Place
+                {
+                    Description = CurrentDayWeatherReport.Location,
+                    Latitude = location.Latitude,
+                    Longitude = location.Longitude
+                };
             }
             catch (Exception ex)
             {
@@ -101,40 +116,83 @@ namespace XFWeatherApp.ViewModels
         {
             try
             {
-                var tempForecast = await _weatherApiManager.GetForecast(Position?.Latitude.ToString(), Position?.Longitude.ToString());
-                Forecasts = new ObservableCollection<WeatherInfo>(tempForecast);
+                var tempForecast = await _weatherApiManager.GetForecast(UserLocation?.Latitude.ToString(), UserLocation?.Longitude.ToString());
+                Forecast = new List<WeatherInfo>(tempForecast);
+                Chart.Entries = await ProcessForecast();
             }
             catch (Exception ex)
             {
                 await HandleError(ex);
             }
         }
-        public async Task GoToMap()
+        async Task SelectedDateChanged()
         {
-            await _navigationService.NavigateAsync("MapPage", new NavigationParameters
+            Chart.Entries = await ProcessForecast();
+        }
+        async Task<List<ChartEntry>> ProcessForecast()
+        {
+            var entries = new List<ChartEntry>();
+            try
             {
-                { ParamKeys.Latitude, Position.Latitude },
-                { ParamKeys.Longitude, Position.Longitude },
-                { ParamKeys.Location, Position.Location }
-            });
+                var currentTime = SelectedDate.Date;
+                foreach (var forecast in Forecast.Where(t => t.Date.Day == currentTime.Day))
+                {
+                    var entry = new ChartEntry((float)forecast.FeelsLike)
+                    {
+                        Label = forecast.Date.ToString("htt"),
+                        ValueLabel = forecast.FeelsLike.ToString(),
+                        ValueLabelColor = SKColors.White,
+                        TextColor = SKColors.White,
+                        Color = forecast.Date > currentTime && forecast.Date < currentTime.AddHours(3) ?
+                                SKColor.Parse("#FA9B14") : SKColors.White,
+                    };
+                    entries.Add(entry);
+                }
+            }
+            catch (Exception ex)
+            {
+                await HandleError(ex);
+            }
+            return entries;
         }
         public void OnNavigatedFrom(INavigationParameters parameters)
         {
-
         }
-        public void OnNavigatedTo(INavigationParameters parameters)
+        public async void OnNavigatedTo(INavigationParameters parameters)
         {
-            if (parameters.ContainsKey(ParamKeys.Latitude) && parameters.ContainsKey(ParamKeys.Longitude) && parameters.ContainsKey(ParamKeys.Location) )
+            var permissionStatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+
+            while(!PermissionGranted(permissionStatus))
             {
-                var latitude = (double)parameters[ParamKeys.Latitude];
-                var longitude = (double)parameters[ParamKeys.Longitude];
-                var location = (string)parameters[ParamKeys.Location];
+                await _userDialogs.AlertAsync(new AlertConfig
+                {
+                    Message = "Oh no!, seems like we can't access your location. To continue please give this app the corresponding access",
+                    OkText = "Ok",
+                    Title = "Permission not granted",
+                });
+                await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                permissionStatus = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            }
 
-                Position = new MapPosition(latitude, longitude, location);
+            if(UserLocation == null)
+            {
+                var geolocation = await Geolocation.GetLastKnownLocationAsync();
+                UserLocation = new Place
+                {
+                    Latitude = geolocation.Latitude,
+                    Longitude = geolocation.Longitude
+                };
+            }
 
+            if(PermissionGranted(permissionStatus))
+            {
                 GetCurrentWeatherCommand.Execute();
                 GetForecastCommand.Execute();
             }
+        }
+        bool PermissionGranted(PermissionStatus status)
+        {
+            return !(status == PermissionStatus.Denied || status == PermissionStatus.Unknown || status == PermissionStatus.Disabled);
         }
     }
 }

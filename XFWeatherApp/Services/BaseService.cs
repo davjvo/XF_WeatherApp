@@ -1,6 +1,5 @@
 ﻿using Acr.UserDialogs;
 using MonkeyCache.FileStore;
-using Plugin.Connectivity;
 using Plugin.Connectivity.Abstractions;
 using Polly;
 using Refit;
@@ -66,7 +65,13 @@ namespace XFWeatherApp.Services
                     var result = await task;
                     if (result.StatusCode == HttpStatusCode.Unauthorized)
                     {
-                        //TODO: Handle unauthorized exception
+                        await _userDialogs.AlertAsync(new AlertConfig
+                        {
+                            Title = "Error",
+                            Message = "Invalid API Key.",
+                            OkText = "Ok"
+
+                        });
                     }
                     return result;
                 });

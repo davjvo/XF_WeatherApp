@@ -27,7 +27,10 @@ namespace XFWeatherApp.ViewModels
                 Title = "Something went wrong :("
             });
         }
-
         public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(PropertyChangedEventArgs eventArgs)
+        {
+            PropertyChanged?.Invoke(this, eventArgs);
+        }
     }
 }

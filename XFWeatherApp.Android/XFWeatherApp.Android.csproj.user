@@ -4,6 +4,6 @@
     <SelectedDevice>pixel_2</SelectedDevice>
     <DefaultDevice>pixel_2</DefaultDevice>
     <AndroidDesignerPreferredTheme>Theme.AppCompat.Light.NoActionBar</AndroidDesignerPreferredTheme>
-    <ProjectView>ShowAllFiles</ProjectView>
+    <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
 </Project>

@@ -151,19 +151,5 @@ namespace XFWeatherApp.UnitTests
             _weatherApiManager.Verify(e => e.GetWeatherInfo(It.IsAny<string>(), It.IsAny<string>()));
             Assert.AreEqual(IconFont.CloudShowersHeavy, _HomePageViewModel.WeatherReport.Icon);
         }
-        [TestMethod]
-        public async Task Should_Navigate_To_Map()
-        {
-            //Arrange
-            _navigationService
-                .Setup(e => e.NavigateAsync(It.IsAny<string>()))
-                .Verifiable();
-
-            //Act
-            await _HomePageViewModel.GoToMap();
-
-            //Assert
-            _navigationService.Verify(e => e.NavigateAsync(It.IsAny<string>()));
-        }
     }
 }

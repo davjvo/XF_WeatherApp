@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using Xamarin.Forms;
+using XFWeatherApp.Models;
 
 namespace XFWeatherApp.Behaviors
 {
